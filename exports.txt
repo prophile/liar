@@ -1,9 +1,10 @@
-class_init_runtime
 class_lookup
 class_lookup_method
 class_msg_send
 class_msg_send_arr
 class_read_static
+class_register_class_method
+class_register_instance_method
 class_write_static
 class_write_static_weak
 exception_throw
@@ -11,6 +12,7 @@ exception_throw_class
 exception_throw_runtime
 method_lookup
 obj_allocate_stack_frame
+obj_class
 obj_frame_transfer
 obj_lookup_method
 obj_msg_send
@@ -20,4 +22,6 @@ obj_read
 obj_release_stack_frame
 obj_write
 obj_write_weak
+rt_init
+rt_register_module
 rt_start
