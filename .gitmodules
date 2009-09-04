@@ -1,0 +1,6 @@
+[submodule "gc"]
+	path = gc
+	url = git://github.com/prophile/gc.git
+[submodule "yarns"]
+	path = yarns
+	url = git://github.com/prophile/yarns.git

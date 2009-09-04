@@ -1,6 +1,6 @@
 #include "hash.h"
 #include "sparse_data_map.h"
-#include "gc.h"
+#include "gc/gc.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>

@@ -1,10 +1,10 @@
 runtime.bc: class.bc gc.bc except.bc hash.bc message.bc sparse_data_map.bc
 	llvm-ld -link-as-library -internalize-public-api-file=exports.txt -o $@ $^
 
-class.bc: class.c sparse_data_map.h hash.h
+class.bc: class.c sparse_data_map.h hash.h gc/gc.h
 	clang -arch x86_64 -O4 -c -o $@ $<
 
-gc.bc: gc.cpp gc.h
+gc.bc: gc/gc.cpp gc/gc.h
 	llvm-g++ -arch x86_64 -O4 -c -o $@ $<
 
 except.bc: except.ll
