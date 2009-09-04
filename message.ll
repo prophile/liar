@@ -21,28 +21,11 @@ wasnull:
 define %rv @obj_msg_send ( i8* %stackFrame, i8* %obj, i64 %msgID, i64 %pcount, ... ) nounwind
 {
 entry:
-	%count = trunc i64 %pcount to i32
-	%vlist = alloca i8*, i32 %count
 	%ap = alloca i8*
 	%ap2 = bitcast i8** %ap to i8*
 	call void @llvm.va_start ( i8* %ap2 )
-	br label %loop
-	
-loop:
-	%index = phi i64 [ 0, %entry ], [ %index.updated, %loop.cont ]
-	%cmp = icmp eq i64 %index, %pcount
-	br i1 %cmp, label %exit, label %loop.cont
-
-loop.cont:
-	%arg = va_arg i8** %ap, i8*
-	%gep = getelementptr i8** %vlist, i64 %index
-	store i8* %arg, i8** %gep
-	%index.updated = add i64 %index, 1
-	br label %loop
-
-exit:
+	%result = call %rv @obj_msg_send_arr ( i8* %stackFrame, i8* %obj, i64 %msgID, i64 %pcount, i8** %ap ) nounwind
 	call void @llvm.va_end ( i8* %ap2 )
-	%result = call %rv @obj_msg_send_arr ( i8* %stackFrame, i8* %obj, i64 %msgID, i64 %pcount, i8** %vlist ) nounwind
 	ret %rv %result
 }
 
@@ -58,28 +41,11 @@ entry:
 define %rv @class_msg_send ( i8* %stackFrame, i64 %class, i64 %msgID, i64 %pcount, ... ) nounwind
 {
 entry:
-	%count = trunc i64 %pcount to i32
-	%vlist = alloca i8*, i32 %count
 	%ap = alloca i8*
 	%ap2 = bitcast i8** %ap to i8*
 	call void @llvm.va_start ( i8* %ap2 )
-	br label %loop
-	
-loop:
-	%index = phi i64 [ 0, %entry ], [ %index.updated, %loop.cont ]
-	%cmp = icmp eq i64 %index, %pcount
-	br i1 %cmp, label %exit, label %loop.cont
-
-loop.cont:
-	%arg = va_arg i8** %ap, i8*
-	%gep = getelementptr i8** %vlist, i64 %index
-	store i8* %arg, i8** %gep
-	%index.updated = add i64 %index, 1
-	br label %loop
-
-exit:
+	%result = call %rv @class_msg_send_arr ( i8* %stackFrame, i64 %class, i64 %msgID, i64 %pcount, i8** %ap ) nounwind
 	call void @llvm.va_end ( i8* %ap2 )
-	%result = call %rv @class_msg_send_arr ( i8* %stackFrame, i64 %class, i64 %msgID, i64 %pcount, i8** %vlist ) nounwind
 	ret %rv %result
 }
 
