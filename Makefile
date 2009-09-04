@@ -27,4 +27,4 @@ runtime.s: runtime.bc
 	llc -march=x86-64 -o=$@ $<
 
 clean:
-	rm -f *.bc
+	rm -f *.bc runtime.o runtime.s
