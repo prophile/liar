@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "imports.h"
 
 typedef struct _class class;
 
@@ -46,6 +47,7 @@ struct _class
 	sparse_data_map instanceMethods;
 	unsigned long instanceVariableOffset;
 	unsigned long numInstanceVariables, numStaticVariables;
+	bool isFinal;
 	ivar svars[0];
 };
 
@@ -109,6 +111,11 @@ unsigned long class_register ( const char* name, unsigned long parent, unsigned 
 	sparse_data_map_init(&cls->instanceMethods);
 	if (cls->superclass)
 	{
+		if (cls->superclass->isFinal)
+		{
+			exec_gotchildren((unsigned long)(cls->superclass));
+			cls->superclass->isFinal = false;
+		}
 		cls->instanceVariableOffset = cls->superclass->numInstanceVariables;
 		cls->numInstanceVariables = nivars + cls->instanceVariableOffset;
 	}
@@ -117,6 +124,7 @@ unsigned long class_register ( const char* name, unsigned long parent, unsigned 
 		cls->instanceVariableOffset = 0;
 		cls->numInstanceVariables = 0;
 	}
+	cls->isFinal = true;
 	cls->numStaticVariables = nsvars;
 	for (i = 0; i < nsvars; i++)
 	{
@@ -267,8 +275,6 @@ unsigned long method_lookup ( const char* name )
 	return hash(name);
 }
 
-extern const void* findsymbol ( const char* name, void* modhandle );
-
 static void class_register_from_data ( const void* data, void* modhandle )
 {
 	unsigned long i;
@@ -303,7 +309,7 @@ static void class_register_from_data ( const void* data, void* modhandle )
 		memcpy(methodName, bdata, nameLength);
 		bdata += nameLength;
 		sprintf(methodEncodedName, "class.%s.%s", name, methodName);
-		const void* ptr = findsymbol(methodEncodedName, modhandle);
+		const void* ptr = exec_findsymbol(methodEncodedName, modhandle);
 		if (ptr)
 		{
 			class_register_class_method(classObj, methodName, ptr);
@@ -321,7 +327,7 @@ static void class_register_from_data ( const void* data, void* modhandle )
 		memcpy(methodName, bdata, nameLength);
 		bdata += nameLength;
 		sprintf(methodEncodedName, "instance.%s.%s", name, methodName);
-		const void* ptr = findsymbol(methodName, modhandle);
+		const void* ptr = exec_findsymbol(methodName, modhandle);
 		if (ptr)
 		{
 			class_register_instance_method(classObj, methodName, ptr);
@@ -338,7 +344,7 @@ unsigned long obj_class ( void* object )
 
 void rt_register_module ( void* modhandle )
 {
-	const unsigned char* infoblock = (unsigned char*)findsymbol("module.info", modhandle);
+	const unsigned char* infoblock = (unsigned char*)exec_findsymbol("module.info", modhandle);
 	unsigned long nclasses = BE64(*(const unsigned long*)infoblock);
 	infoblock += 8;
 	unsigned long i;
@@ -351,7 +357,7 @@ void rt_register_module ( void* modhandle )
 		name[nameLength] = 0;
 		memcpy(name, infoblock, nameLength);
 		sprintf(dataName, "class.%s", name);
-		const void* classBlock = findsymbol(dataName, modhandle);
+		const void* classBlock = exec_findsymbol(dataName, modhandle);
 		if (classBlock)
 			class_register_from_data(classBlock, modhandle);
 	}
